@@ -54,13 +54,12 @@ public class CategoryService {
         return  new ResponseMessage<>(true," Update category thành công ",categories);
     }
 
-    public ResponseMessage<String> deleteCategory(CategoryDelete categoryDelete){
-        Optional<Categories> categories = categoryRepository.findByCode(categoryDelete.getCode());
+    public ResponseMessage<String> deleteCategory(String code){
+        Optional<Categories> categories = categoryRepository.findByCode(code);
 
         if(categories.isEmpty()){
             return  new ResponseMessage<>(false," Mã sản phẩm không tồn tại ", null);
         }
-
         categoryRepository.delete(categories.get());
 
         return  new ResponseMessage<>(true ,"Xoá thành công ", null);

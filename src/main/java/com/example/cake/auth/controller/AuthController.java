@@ -1,4 +1,4 @@
-package com.example.cake.auth.controller;
+    package com.example.cake.auth.controller;
 
 
 import com.example.cake.auth.dto.*;
