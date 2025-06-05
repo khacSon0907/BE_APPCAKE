@@ -10,8 +10,13 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Khi gọi: http://localhost:8080/static/avatars/abc.jpg
+        // Avatar user: http://localhost:8080/static/avatars/abc.jpg
         registry.addResourceHandler("/static/avatars/**")
                 .addResourceLocations("file:uploads/avatars/");
+
+        //  Ảnh sản phẩm: http://localhost:8080/static/products/abc.jpg
+        registry.addResourceHandler("/static/products/**")
+                .addResourceLocations("file:uploads/products/");
+
     }
 }
