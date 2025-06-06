@@ -59,9 +59,7 @@ public class UserController {
         try {
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
-
             UpdateUserRequest request = mapper.readValue(rawJson, UpdateUserRequest.class);
-
             return ResponseEntity.ok(userService.updateUser(userPrincipal.getEmail(), request, avatarFile));
         } catch (Exception e) {
             log.error("❌ Lỗi parse JSON từ Postman", e);

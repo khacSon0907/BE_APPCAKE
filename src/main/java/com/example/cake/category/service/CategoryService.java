@@ -18,6 +18,10 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
+
+
+
+
     public ResponseMessage<Categories> createCategory(CategoryCreateRequest request) {
         if (categoryRepository.existsByCode(request.getCode())) {
             return new ResponseMessage<>(false, "Mã code của loại bánh đã tồn tại", null);
@@ -41,6 +45,8 @@ public class CategoryService {
         List<Categories> categoriesList = categoryRepository.findAll();
         return new ResponseMessage<>(true,"Danh sách categories ", categoriesList);
     }
+
+
 
     public  ResponseMessage<Categories> updateCategory(CategoryUpdate request){
         Optional<Categories> categoriesOptional = categoryRepository.findByCode(request.getCode());
