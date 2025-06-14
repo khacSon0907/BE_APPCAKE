@@ -66,7 +66,4 @@ public class UserController {
             return ResponseEntity.badRequest().body(new ResponseMessage<>(false, "Lỗi parse JSON", null));
         }
     }
-
-
-
 }

@@ -1,7 +1,8 @@
 package com.example.cake.category.controller;
 
-
 import com.example.cake.category.dto.ProductCreateRequest;
+import com.example.cake.category.dto.ProductUpdateRequest; // Thêm import này
+import com.example.cake.category.dto.ProductDeleteRequest;
 import com.example.cake.category.model.Product;
 import com.example.cake.category.service.ProductService;
 import com.example.cake.response.ResponseMessage;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/admin/products")
@@ -23,6 +25,46 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+
+    @PutMapping("/update")
+    public ResponseEntity<ResponseMessage<Product>> updateProduct(
+            @RequestPart("request") String rawJson,
+            @RequestPart(value = "imageFile", required = false) MultipartFile imageFile
+    ) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule()); // để xử lý LocalDateTime
+
+            ProductUpdateRequest request = mapper.readValue(rawJson, ProductUpdateRequest.class);
+
+            System.out.println("okok "+  request);
+            // Validate ID
+            if (request.getId() == null || request.getId().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(
+                        new ResponseMessage<>(false, "ID sản phẩm không được để trống", null)
+                );
+            }
+
+            ResponseMessage<Product> result = productService.updateProduct(request, imageFile);
+
+            if (result.isSuccess()) {
+                return ResponseEntity.ok(result);
+            } else {
+                return ResponseEntity.badRequest().body(result);
+            }
+
+        } catch (Exception e) {
+            log.error("❌ Lỗi parse JSON ProductUpdateRequest", e);
+            return ResponseEntity.badRequest().body(
+                    new ResponseMessage<>(false, "Lỗi parse JSON: " + e.getMessage(), null)
+            );
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResponseMessage<String>> deleteProductById(@PathVariable String id){
+        return ResponseEntity.ok(productService.deleteProduct(id));
+    }
 
     @GetMapping
     public ResponseEntity<ResponseMessage<List<Product>>> getAllProducts() {
@@ -51,6 +93,4 @@ public class ProductController {
             return ResponseEntity.badRequest().body(new ResponseMessage<>(false, "Lỗi parse JSON", null));
         }
     }
-
-
 }
