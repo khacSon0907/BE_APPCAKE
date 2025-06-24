@@ -37,7 +37,7 @@ public class AuthController {
             @RequestBody Map<String, String> request,
             HttpServletResponse response) {
         String idToken = request.get("idToken");
-        System.out.println("✅ ID Token từ FE: " + idToken);
+        System.out.println("✅ ID Token từ FE trong Controller: " + idToken);
         return ResponseEntity.ok(authService.loginWithGoogle(idToken, response));
     }
 

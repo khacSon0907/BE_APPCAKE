@@ -229,7 +229,7 @@ public class UserService {
         } else {
             user.setAvatarUrl(request.getAvatarUrl());
         }
-        // ✅ 2. Cập nhật các trường khác
+
         user.setFullname(request.getFullname());
         user.setPhoneNumber(request.getPhoneNumber());
         user.setGender(request.getGender());
@@ -241,9 +241,12 @@ public class UserService {
     }
 
 
-
+        
     public ResponseMessage<String> forgetPassword(String email) {
         Optional<User> optionalUser = userRepository.findByEmail(email);
         return new ResponseMessage<>(true, "Hãy lưu lại mật khẩu ", null);
     }
+
+
+
 }
