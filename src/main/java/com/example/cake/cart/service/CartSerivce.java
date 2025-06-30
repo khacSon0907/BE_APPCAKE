@@ -77,25 +77,24 @@ public class CartSerivce {
 
         return new ResponseMessage<>(true, "Lấy giỏ hàng thành công", cart.get());
     }
-
     public ResponseMessage<Boolean> deleteCartItem(String userId, String productId) {
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {
             return new ResponseMessage<>(false, "User không tồn tại", false);
         }
-        // Tìm cart hiện tại của user
         Optional<Cart> existingCart = cartRepository.findByUserId(userId);
         if (!existingCart.isPresent()) {
             return new ResponseMessage<>(false, "Không tìm thấy giỏ hàng", false);
         }
-        // Lấy danh sách các sản phẩm trong giỏ hàng
         List<CartItem> items = existingCart.get().getItems();
-        // Loại bỏ sản phẩm khỏi danh sách
-        items.removeIf(item -> item.getProductId().equals(productId));
-        // Lưu lại giỏ hàng sau khi cập nhật
+        boolean itemRemoved = items.removeIf(item -> item.getProductId().equals(productId));
+        if (!itemRemoved) {
+            return new ResponseMessage<>(false, "Sản phẩm không tồn tại trong giỏ hàng", false);
+        }
         cartRepository.save(existingCart.get());
         return new ResponseMessage<>(true, "Xóa sản phẩm thành công", true);
     }
+
 
     public ResponseMessage<List<CartItem>> getAllProductsInCart(String userId) {
         Optional<User> optionalUser = userRepository.findById(userId);

@@ -41,4 +41,16 @@ public class CartController {
         ResponseMessage<Cart> response = cartService.getCartByUserId(userId);
         return ResponseEntity.ok(response);
     }
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @DeleteMapping("/{userId}/item/{productId}")
+    public ResponseEntity<ResponseMessage<Boolean>> deleteCartItem(
+            @PathVariable String userId,
+            @PathVariable String productId) {
+        ResponseMessage<Boolean> response = cartService.deleteCartItem(userId, productId);
+
+            System.out.println(" respon : "+  response.isSuccess());
+            return ResponseEntity.ok(response);
+
+    }
+
 }
