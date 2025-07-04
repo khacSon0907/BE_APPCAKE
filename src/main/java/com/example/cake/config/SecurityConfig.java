@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/static/**").permitAll()
+                        .requestMatchers("/api/orders/**").permitAll()
                         .requestMatchers("/api/categories/**").hasRole("ADMIN")
                         .requestMatchers("/api/cart/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
@@ -34,8 +35,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "USER")
                         .requestMatchers("/api/attendance/**").hasAnyRole("ADMIN", "USER")
+
                         .anyRequest().authenticated()
                 )
+
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

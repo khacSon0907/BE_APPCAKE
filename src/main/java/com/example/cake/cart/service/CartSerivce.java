@@ -21,6 +21,8 @@ public class CartSerivce {
     private final CartRepository cartRepository;
     private final UserRepository userRepository;
 
+
+
     public ResponseMessage<Cart> addToCart(String userId, CartItem newItem) {
         // Kiểm tra user có tồn tại không
         Optional<User> optionalUser = userRepository.findById(userId);
@@ -135,6 +137,27 @@ public class CartSerivce {
         List<Cart> carts = cartRepository.findAll();
         return new ResponseMessage<>(true, "Get all carts successfully", carts);
     }
+
+    public boolean deleteCartItemsByProductIds(String userId, List<String> productId){
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            return false;
+        }
+        // Tìm cart hiện tại của user
+        Optional<Cart> existingCart = cartRepository.findByUserId(userId);
+        if (!existingCart.isPresent()) {
+            return false;
+        }
+        List<CartItem> items = existingCart.get().getItems();
+
+        for (String id : productId) {
+            items.removeIf(item -> item.getProductId().equals(id));
+        }
+        cartRepository.save(existingCart.get());
+        return true;
+    }
+
+
 }
 
 

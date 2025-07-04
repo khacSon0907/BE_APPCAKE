@@ -8,10 +8,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderItem {
-
     private String productId;
     private String name;
-    private String image;
     private double price;     // Giá chốt lúc đặt hàng
     private int quantity;
     private int discount;     // Giảm giá đơn vị %

@@ -7,3 +7,16 @@ services:
     ports:
       - "6379:6379"  # Mở cổng 6379 bên trong container ra cổng 6379 máy host
     restart: always  # Tự khởi động lại nếu container tắt đột ngột
+#  app:
+#    build: .
+#    container_name: spring_app
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      - SPRING_REDIS_HOST=redis_server
+#      - SPRING_REDIS_PORT=6379
+#    depends_on:
+#      - redis
+#
+
+
