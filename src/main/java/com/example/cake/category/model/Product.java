@@ -33,7 +33,7 @@ public class Product {
     private String size; // Kích thước (Small, Medium, Large)
     private Double weight; // Trọng lượng (gram)
     private Boolean isAvailable; // Còn bán hay không
-
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
 }

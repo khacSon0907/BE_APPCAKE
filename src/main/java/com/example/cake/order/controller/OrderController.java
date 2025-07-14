@@ -58,4 +58,10 @@ public class OrderController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+    @GetMapping("/{userId}")
+    public ResponseEntity<ResponseMessage<List<Order>>> getOredersByUserId(@PathVariable String userId){
+        ResponseMessage<List<Order>> response=orderService.getOrdersByUserId(userId);
+        return ResponseEntity.ok().body(response);
+    }
+
 }
