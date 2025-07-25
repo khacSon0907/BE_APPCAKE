@@ -1,8 +1,9 @@
 package com.example.cake.order.model;
 
 public enum OrderStatus {
-    PENDING,
-    PROCESSING,// Chờ xác nhận
+    UNCONFIRMED,    // Chưa xác nhận
     CONFIRMED,      // Đã xác nhận
-    CANCELLED       // Bị hủy
+    SHIPPING,       // Đang giao
+    COMPLETED,      // Hoàn tất
+    CANCELLED       // Đã hủy
 }

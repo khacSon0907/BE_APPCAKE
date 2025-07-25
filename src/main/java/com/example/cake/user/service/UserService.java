@@ -2,6 +2,7 @@ package com.example.cake.user.service;
 
 
 import com.example.cake.auth.dto.VerifyOtpRequest;
+import com.example.cake.auth.model.Address;
 import com.example.cake.auth.model.User;
 import com.example.cake.auth.repository.UserRepository;
 import com.example.cake.auth.service.EmailService;
@@ -189,12 +190,15 @@ public class UserService {
         return new ResponseMessage<>(true, "Đổi mật khẩu thành công", null);
     }
 
-    public ResponseMessage<User> updateUser(String email, UpdateUserRequest request,MultipartFile avatarFile) {
+    public ResponseMessage<User> updateUser(String email, UpdateUserRequest request, MultipartFile avatarFile) {
         Optional<User> optionalUser = userRepository.findByEmail(email);
         if (optionalUser.isEmpty()) {
-            return new ResponseMessage<>(false, "không tim thấy email user", null);
+            return new ResponseMessage<>(false, "Không tìm thấy user với email này", null);
         }
+
         User user = optionalUser.get();
+
+        // Xử lý avatar nếu có upload file mới
         if (avatarFile != null && !avatarFile.isEmpty()) {
             try {
                 String contentType = avatarFile.getContentType();
@@ -221,23 +225,32 @@ public class UserService {
 
                 String avatarUrl = "http://localhost:8080/static/avatars/" + fileName;
                 user.setAvatarUrl(avatarUrl);
-
             } catch (IOException e) {
                 e.printStackTrace();
                 return new ResponseMessage<>(false, "Lỗi khi lưu file ảnh đại diện", null);
             }
-        } else {
+        } else if (request.getAvatarUrl() != null) {
             user.setAvatarUrl(request.getAvatarUrl());
         }
 
+        // Cập nhật các trường cơ bản
         user.setFullname(request.getFullname());
         user.setPhoneNumber(request.getPhoneNumber());
         user.setGender(request.getGender());
         user.setDateOfBirth(request.getDateOfBirth());
-        user.setAddress(request.getAddress());
 
+        // Cập nhật địa chỉ chi tiết
+        if (request.getAddress() != null) {
+            Address reqAddr = request.getAddress();
+            Address userAddr = user.getAddress() != null ? user.getAddress() : new Address();
+            userAddr.setStreet(reqAddr.getStreet());
+            userAddr.setWard(reqAddr.getWard());
+            userAddr.setDistrict(reqAddr.getDistrict());
+            userAddr.setCity(reqAddr.getCity());
+            user.setAddress(userAddr);
+        }
         userRepository.save(user);
-        return new ResponseMessage<>(true, "Update User thành công ", user);
+        return new ResponseMessage<>(true, "Cập nhật thông tin người dùng thành công", user);
     }
 
 

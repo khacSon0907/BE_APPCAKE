@@ -23,10 +23,10 @@ public class Product {
 
     @Id
     private String id;
+    private String categoryCode; // Reference to Categories
     private String name;
     private String description;
     private BigDecimal price;
-    private String categoryCode; // Reference to Categories
     private String images;
     private Integer stock; // Số lượng tồn kho
     private String ingredients; // Thành phần
@@ -35,5 +35,5 @@ public class Product {
     private Boolean isAvailable; // Còn bán hay không
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
+    private Double discountPercentage; // Ví dụ: 0.1 cho 10%, 0.25 cho 25%
 }

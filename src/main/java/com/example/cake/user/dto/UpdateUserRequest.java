@@ -1,6 +1,7 @@
 package com.example.cake.user.dto;
 
 
+import com.example.cake.auth.model.Address;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -12,5 +13,5 @@ public class UpdateUserRequest {
     private String gender;
     private LocalDate dateOfBirth;
     private String avatarUrl;
-    private String address;
+    private Address address; // ← dùng Address đã định nghĩa
 }

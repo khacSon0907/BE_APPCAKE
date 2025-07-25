@@ -28,7 +28,7 @@ public class User {
     private LocalDate dateOfBirth;              // ngay sinh nam sinh
     private LocalDate createdAt;                // Ngày tao tai khoan
     private String avatarUrl;                    // Link ảnh đại diện
-    private String address;                      // địa chỉ ;
+    private Address address;                     // địa chỉ ;
     private AutheProvider authProvider;          // loại tài khoản
 
 

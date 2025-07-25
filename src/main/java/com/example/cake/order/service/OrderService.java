@@ -56,7 +56,7 @@ public class OrderService {
                     .discount(orderRequest.getDiscount())
                     .shippingAddress(orderRequest.getShippingAddress())
                     .paymentMethod(orderRequest.getPaymentMethod())
-                    .status(OrderStatus.PENDING)
+                    .status(OrderStatus.UNCONFIRMED)
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();
