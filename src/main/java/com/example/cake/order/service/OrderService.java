@@ -1,9 +1,13 @@
 package com.example.cake.order.service;
 
+import com.example.cake.auth.model.User;
 import com.example.cake.auth.repository.UserRepository;
 import com.example.cake.cart.model.CartItem;
 import com.example.cake.cart.service.CartSerivce;
+import com.example.cake.category.model.Product;
+import com.example.cake.category.repository.ProductRepository;
 import com.example.cake.order.dto.OrderRequest;
+import com.example.cake.order.dto.OrderResponse;
 import com.example.cake.order.model.Order;
 import com.example.cake.order.model.OrderItem;
 import com.example.cake.order.model.OrderStatus;
@@ -22,8 +26,9 @@ import java.util.Optional;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-
+    private final UserRepository userRepository;
     private final CartSerivce  cartSerivce;
+    private final ProductRepository productRepository;
 
     public ResponseMessage<Order> createOrder(Order orderRequest) {
         try {
@@ -87,10 +92,36 @@ public class OrderService {
         }
     }
 
-    public ResponseMessage<List<Order>> getAllOrders() {
+    public ResponseMessage<List<OrderResponse>> getAllOrders() {
         try {
             List<Order> orders = orderRepository.findAll();
-            return new ResponseMessage<>(true, "Orders retrieved successfully", orders);
+            
+            // Convert Order to OrderResponse with user info
+            List<OrderResponse> orderResponses = orders.stream()
+                    .map(order -> {
+                        // Get user information for each order
+                        Optional<User> userOptional = userRepository.findById(order.getUserId());
+                        String userName = userOptional.map(User::getFullname).orElse("Unknown User");
+                        String userPhone = userOptional.map(User::getPhoneNumber).orElse("Unknown Phone");
+                        
+                        return OrderResponse.builder()
+                                .id(order.getId())
+                                .userId(order.getUserId())
+                                .userName(userName)
+                                .userPhone(userPhone)
+                                .items(order.getItems())
+                                .totalPrice(order.getTotalPrice())
+                                .discount(order.getDiscount())
+                                .shippingAddress(order.getShippingAddress())
+                                .paymentMethod(order.getPaymentMethod())
+                                .status(order.getStatus())
+                                .createdAt(order.getCreatedAt())
+                                .updatedAt(order.getUpdatedAt())
+                                .build();
+                    })
+                    .toList();
+            
+            return new ResponseMessage<>(true, "Orders retrieved successfully", orderResponses);
         } catch (Exception e) {
             return new ResponseMessage<>(false, "Failed to retrieve orders: " + e.getMessage(), null);
         }
@@ -107,14 +138,40 @@ public class OrderService {
         return new ResponseMessage<>(false, "Order not found with ID: " + orderId, null);
     }
 
-    public ResponseMessage<List<Order>> getOrdersByUserId(String userId) {
+    public ResponseMessage<List<OrderResponse>> getOrdersByUserId(String userId) {
         if (userId == null || userId.trim().isEmpty()) {
             return new ResponseMessage<>(false, "User ID is required", null);
         }
 
         try {
+            // Get user information
+            Optional<User> userOptional = userRepository.findById(userId);
+            if (userOptional.isEmpty()) {
+                return new ResponseMessage<>(false, "User not found with ID: " + userId, null);
+            }
+            
+            User user = userOptional.get();
             List<Order> orders = orderRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
-            return new ResponseMessage<>(true, "Orders retrieved successfully", orders);
+            
+            // Convert Order to OrderResponse with user info
+            List<OrderResponse> orderResponses = orders.stream()
+                    .map(order -> OrderResponse.builder()
+                            .id(order.getId())
+                            .userId(order.getUserId())
+                            .userName(user.getFullname())
+                            .userPhone(user.getPhoneNumber())
+                            .items(order.getItems())
+                            .totalPrice(order.getTotalPrice())
+                            .discount(order.getDiscount())
+                            .shippingAddress(order.getShippingAddress())
+                            .paymentMethod(order.getPaymentMethod())
+                            .status(order.getStatus())
+                            .createdAt(order.getCreatedAt())
+                            .updatedAt(order.getUpdatedAt())
+                            .build())
+                    .toList();
+            
+            return new ResponseMessage<>(true, "Orders retrieved successfully", orderResponses);
         } catch (Exception e) {
             return new ResponseMessage<>(false, "Failed to retrieve orders: " + e.getMessage(), null);
         }
@@ -135,10 +192,19 @@ public class OrderService {
         }
 
         Order order = orderOptional.get();
+        OrderStatus previousStatus = order.getStatus();
         
         // Business logic for status transitions
         if (order.getStatus() == OrderStatus.CANCELLED) {
             return new ResponseMessage<>(false, "Cannot update status of cancelled order", null);
+        }
+
+        // Check if we're confirming the order and need to update stock
+        if (status == OrderStatus.CONFIRMED && previousStatus != OrderStatus.CONFIRMED) {
+            ResponseMessage<String> stockUpdateResult = updateProductStock(order);
+            if (!stockUpdateResult.isSuccess()) {
+                return new ResponseMessage<>(false, stockUpdateResult.getMessage(), null);
+            }
         }
 
         order.setStatus(status);
@@ -155,7 +221,7 @@ public class OrderService {
     public ResponseMessage<String> cancelOrder(String orderId) {
         if (orderId == null || orderId.trim().isEmpty()) {
             return new ResponseMessage<>(false, "Order ID is required", null);
-        }
+        }      
 
         Optional<Order> orderOptional = orderRepository.findById(orderId);
         if (orderOptional.isEmpty()) {
@@ -236,5 +302,44 @@ public class OrderService {
         itemsTotal -= discountAmount;
         
         return Math.max(0, itemsTotal); // Ensure total is not negative
+    }
+
+    private ResponseMessage<String> updateProductStock(Order order) {
+        try {
+            for (OrderItem item : order.getItems()) {
+                Optional<Product> productOptional = productRepository.findById(item.getProductId());
+                
+                if (productOptional.isEmpty()) {
+                    return new ResponseMessage<>(false, 
+                        "Product not found with ID: " + item.getProductId(), null);
+                }
+                
+                Product product = productOptional.get();
+                
+                // Check if there's enough stock
+                if (product.getStock() == null || product.getStock() < item.getQuantity()) {
+                    return new ResponseMessage<>(false, 
+                        "Insufficient stock for product: " + product.getName() + 
+                        ". Available: " + (product.getStock() != null ? product.getStock() : 0) + 
+                        ", Required: " + item.getQuantity(), null);
+                }
+                
+                // Decrease stock
+                product.setStock(product.getStock() - item.getQuantity());
+                product.setUpdatedAt(LocalDateTime.now());
+                
+                // Update availability if stock reaches 0
+                if (product.getStock() <= 0) {
+                    product.setIsAvailable(false);
+                }
+                
+                productRepository.save(product);
+            }
+            
+            return new ResponseMessage<>(true, "Product stock updated successfully", null);
+        } catch (Exception e) {
+            return new ResponseMessage<>(false, 
+                "Failed to update product stock: " + e.getMessage(), null);
+        }
     }
 }

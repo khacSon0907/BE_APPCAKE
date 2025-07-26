@@ -1,6 +1,7 @@
 
 package com.example.cake.order.controller;
 
+import com.example.cake.order.dto.OrderResponse;
 import com.example.cake.order.model.Order;
 import com.example.cake.order.model.OrderStatus;
 import com.example.cake.order.service.OrderService;
@@ -19,20 +20,7 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    @GetMapping("/test")
-    public String Test(){
-        return "Test thành công rồi nhé ";
-    }
 
-    @GetMapping("/all")
-    public ResponseEntity<ResponseMessage<List<Order>>> getAllOrders() {
-        ResponseMessage<List<Order>> response = orderService.getAllOrders();
-        if (response.isSuccess()) {
-            return ResponseEntity.ok().body(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
 
 
     @PostMapping("/create-order")
@@ -59,9 +47,19 @@ public class OrderController {
         }
     }
     @GetMapping("/{userId}")
-    public ResponseEntity<ResponseMessage<List<Order>>> getOredersByUserId(@PathVariable String userId){
-        ResponseMessage<List<Order>> response=orderService.getOrdersByUserId(userId);
+    public ResponseEntity<ResponseMessage<List<OrderResponse>>> getOredersByUserId(@PathVariable String userId){
+        ResponseMessage<List<OrderResponse>> response=orderService.getOrdersByUserId(userId);
         return ResponseEntity.ok().body(response);
+    }
+
+    @PutMapping("/{orderId}/cancel")
+    public ResponseEntity<ResponseMessage<String>> cancelOrder(@PathVariable String orderId) {
+        ResponseMessage<String> response = orderService.cancelOrder(orderId);
+        if (response.isSuccess()) {
+            return ResponseEntity.ok().body(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
 }

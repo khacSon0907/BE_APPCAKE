@@ -1,6 +1,7 @@
 package com.example.cake.order.controller;
 
 
+import com.example.cake.order.dto.OrderResponse;
 import com.example.cake.order.model.Order;
 import com.example.cake.order.model.OrderStatus;
 import com.example.cake.order.service.OrderService;
@@ -27,8 +28,8 @@ public class OrderAdminController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<ResponseMessage<List<Order>>> getAllOrders() {
-        ResponseMessage<List<Order>> response = orderService.getAllOrders();
+    public ResponseEntity<ResponseMessage<List<OrderResponse>>> getAllOrders() {
+        ResponseMessage<List<OrderResponse>> response = orderService.getAllOrders();
         if (response.isSuccess()) {
             return ResponseEntity.ok().body(response);
         } else {
